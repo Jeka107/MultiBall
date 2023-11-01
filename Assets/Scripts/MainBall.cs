@@ -21,6 +21,10 @@ public class MainBall : MonoBehaviour
     public delegate int OnGetmainNumber();
     public static event OnGetmainNumber onGetmainNumber;
 
+    //Move background
+    public delegate void OnMoveBackground(Vector3 distance);
+    public static event OnMoveBackground onMoveBackground;
+
     [SerializeField] private float moveSpeed;
     [SerializeField] private TextMeshProUGUI textMainNumber;
     [SerializeField] private float forceCollision;
@@ -28,6 +32,7 @@ public class MainBall : MonoBehaviour
     private Rigidbody rb;
     private bool clicked=false;
     private Transform transformClicked;
+    private Vector3 distance;
     private int mainNum;
     private GameObject ballClicked;
     private int numClicked;
@@ -63,6 +68,9 @@ public class MainBall : MonoBehaviour
     private void MoveMain(Transform _transformClicked,GameObject ball)
     {
         transformClicked = _transformClicked;
+        distance = transformClicked.position - transform.position;
+        onMoveBackground?.Invoke(distance);
+
         clicked = true;
 
         ballClicked = ball;
@@ -75,7 +83,6 @@ public class MainBall : MonoBehaviour
             Destroy(collision.gameObject);
             if (mainNum * currentMult == numClicked)
             {
-                Debug.Log("Correct");
                 currentMult++;
                 onPlayerProgress?.Invoke(currentMult);
                 onDestination?.Invoke();
@@ -83,7 +90,6 @@ public class MainBall : MonoBehaviour
             else
             {
                 onGameOver?.Invoke();
-                Debug.Log("Incorrect (GAME OVER)");
             }
         }
     }

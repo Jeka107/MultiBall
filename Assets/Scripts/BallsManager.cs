@@ -115,7 +115,6 @@ public class BallsManager : MonoBehaviour
             {
                 if (exceptionsNumbers[i] == randNum)
                 {
-                    Debug.Log("dublicates");
                     PutInNumber(ball);
                     return;
                 }

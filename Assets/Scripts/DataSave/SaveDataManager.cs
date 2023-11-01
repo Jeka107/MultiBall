@@ -66,6 +66,7 @@ public class SaveDataManager : MonoBehaviour
         else
         {
             newGame = LoadData();
+            Debug.Log(1);
         }
 
         MenuManager.onGetLastSelectedNum += GetLastSelectedNumber;
@@ -112,7 +113,8 @@ public class SaveDataManager : MonoBehaviour
     //Get//
     public int GetLastSelectedNumber()
     {
-        currentMainNum= newGame[0].mainNumber;
+        if(newGame!=null)
+            currentMainNum= newGame[0].mainNumber;
 
         return currentMainNum;
     }
@@ -131,7 +133,6 @@ public class SaveDataManager : MonoBehaviour
     {
         string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveFileName;
 
-        Debug.Log(filePath);
         if (!System.IO.File.Exists(filePath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -142,10 +143,10 @@ public class SaveDataManager : MonoBehaviour
 
         StreamWriter sw = new StreamWriter(fs);
 
-        /*if (encrypt)
+        if (encrypt)
         {
             dataInJSON = EncryptDecrypt(dataInJSON);
-        }*/
+        }
 
         sw.Write(dataInJSON);
 
@@ -166,10 +167,10 @@ public class SaveDataManager : MonoBehaviour
 
             dataToLoad = sr.ReadToEnd();
 
-            /*if (encrypt)
+            if (encrypt)
             {
                 dataToLoad = EncryptDecrypt(dataToLoad);
-            }*/
+            }
 
             List<PlayerSavedData> loadedData = JsonHelper.FromJson<PlayerSavedData>(dataToLoad);
 
