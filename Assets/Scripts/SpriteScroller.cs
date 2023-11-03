@@ -16,16 +16,17 @@ public class SpriteScroller : MonoBehaviour
 
         MainBall.onMoveBackground += MoveBackground;
         MainBall.onDestination += StopBackground;
+        MainBall.onGameOver += StopBackground;
     }
     private void OnDestroy()
     {
         MainBall.onMoveBackground -= MoveBackground;
         MainBall.onDestination -= StopBackground;
+        MainBall.onGameOver -= StopBackground;
     }
 
     private void Update()
     {
-        //offset = moveSpeed * Time.deltaTime;
         if(move)
             material.mainTextureOffset += offset;
     }

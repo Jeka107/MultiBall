@@ -7,16 +7,17 @@ public class BallsManager : MonoBehaviour
     [SerializeField] private GameObject mainBall;
     [SerializeField] private GameObject ball;
     [SerializeField] private Transform ballsParent;
-    [SerializeField] private int mainNum;
+     
 
     private List<GameObject> balls = new List<GameObject>();
-    private List<int> rows=new List<int>{ 1,2,3,4,5,6 };
+    private List<int> rows=new List<int>{ 1,2,3 };
+    private List<int> colms = new List<int> { 1, 2, 3 };
     private List<int> exceptionsNumbers = new List<int>();
+    private int mainNum;
     private Vector3 mainBallPosition;
     private GameObject currentBall;
     private Vector3 spawnPosition;
     private int currentMult = 2;
-    private bool correctNumber = false;
 
     private void Awake()
     {
@@ -44,82 +45,96 @@ public class BallsManager : MonoBehaviour
     private void CreateBalls()
     {
         mainBallPosition = mainBall.transform.position;
+        float randBall;
 
-        for (int i = 0; i <= 5; i++)
+        for (int i = 0; i <= 2; i++)
         {
             int randRow = Random.Range(0, rows.Count - 1);
 
             if (rows.Count != 0)
             {
-                PositionBalls(rows[randRow]);
-                rows.RemoveAt(randRow);
+                for (int j = 0; j <= 2; j++)
+                {
+                    PositionBalls(rows[i], colms[j]);
+                }
             }
         }
-        rows = new List<int> { 1, 2, 3, 4, 5, 6 };
+
+        randBall = Random.Range(0, balls.Count - 1);
+        PutInNumber(balls[(int)randBall], true);
+
+        for (int j=0;j<balls.Count;j++)
+        {
+            if (j != (int)randBall)
+                PutInNumber(balls[j], false);
+        }
+
         exceptionsNumbers.Clear();
-        correctNumber = false;
     }
-    private void PositionBalls(int rowNumber)
+    private void PositionBalls(int rowNumber,int colmsNumber)
     {
-        float randx = Random.Range(Mathf.Round(mainBallPosition.x - 6f), Mathf.Round(mainBallPosition.x + 6f));
-        
-        spawnPosition.x = randx;
+        float randx=0;
+        float randy=0;
+        float randz;
+
         spawnPosition.z = mainBallPosition.z;
 
         switch (rowNumber)
         {
             case 1:
-                spawnPosition.y = 0.5f+ mainBallPosition.y;
-                spawnPosition.z += 10;
+                randy= Random.Range(-1f,2f);
                 break;
             case 2:
-                spawnPosition.y = 4.5f + mainBallPosition.y;
-                spawnPosition.z += 15;
+                randy = Random.Range(6f,10f);
                 break;
             case 3:
-                spawnPosition.y = 8f + mainBallPosition.y;
-                spawnPosition.z += 20;
-                break;
-            case 4:
-                spawnPosition.y = 11.5f + mainBallPosition.y;
-                spawnPosition.z += 20;
-                break;
-            case 5:
-                spawnPosition.y = 15f + mainBallPosition.y;
-                spawnPosition.z += 15;
-                break;
-            case 6:
-                spawnPosition.y = 18f + mainBallPosition.y;
-                spawnPosition.z += 10;
+                randy = Random.Range(14f, 20f);
                 break;
         }
+        switch(colmsNumber)
+        {
+            case 1:
+                randx = Random.Range(Mathf.Round(mainBallPosition.x - 6f), Mathf.Round(mainBallPosition.x - 5f));
+                break;
+            case 2:
+                randx = Random.Range(Mathf.Round(mainBallPosition.x - 2f), Mathf.Round(mainBallPosition.x + 2f));
+                break;
+            case 3:
+                randx = Random.Range(Mathf.Round(mainBallPosition.x + 5f), Mathf.Round(mainBallPosition.x + 6f));
+                break;
+        }
+        randz = Random.Range(10f, 20f);
+        
+        spawnPosition.y = randy + mainBallPosition.y;
+        spawnPosition.x = randx;
+        spawnPosition.z += (int)randz;
 
-        currentBall=Instantiate(ball, spawnPosition, Quaternion.identity, ballsParent);
+        currentBall =Instantiate(ball, spawnPosition, Quaternion.identity, ballsParent);
         balls.Add(currentBall);
-        PutInNumber(currentBall);
     }
-    private void PutInNumber(GameObject ball)
+
+    private void PutInNumber(GameObject ball,bool correctNumber)
     {
-        if (!correctNumber)
+        int randNum;
+
+        if (correctNumber)
         {
             ball.GetComponent<Ball>().SetNumber(mainNum * currentMult);
             exceptionsNumbers.Add(mainNum * currentMult);
             currentMult++;
-            correctNumber = true;
         }
         else
         {
-            int randNum = Random.Range(mainNum * (currentMult-2), mainNum * (currentMult + 2));
+            randNum = Random.Range((mainNum * (currentMult - 2))+1, mainNum * (currentMult + 4));
 
             for (int i = 0; i < exceptionsNumbers.Count; i++)
             {
                 if (exceptionsNumbers[i] == randNum)
                 {
-                    PutInNumber(ball);
+                    PutInNumber(ball,false);
                     return;
                 }
             }
-
             ball.GetComponent<Ball>().SetNumber(randNum);
             exceptionsNumbers.Add(randNum);
         }
