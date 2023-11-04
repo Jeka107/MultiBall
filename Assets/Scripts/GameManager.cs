@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
 
     private float currentPoints;
     private float time;
-    private bool progressStarted=false;
+    private bool timerOn=false;
 
     /////////////////////////////
     [Header("Scene Management")]
@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI finalScoreText;
 
     private bool gameOver=false;
+    private bool labelOn = false;
     /////////////////////////////
 
     private void Awake()
@@ -55,17 +56,17 @@ public class GameManager : MonoBehaviour
     }
     private void Update()
     {
-        if (progressStarted)
+        if (timerOn)
         {
-            time += Time.deltaTime*1.5f;
-            timeText.text = ((int)time).ToString();
+            time += Time.deltaTime;
+            DisplayTime(time);
         }
         if (gameOver)
         {
             if (time >= 0)
             {
                 time -= Time.deltaTime * 15;
-                finalTimeText.text = ((int)time).ToString();
+                DisplayTime(time);
 
                 FinalScore();
             }
@@ -78,9 +79,17 @@ public class GameManager : MonoBehaviour
     }
     /////////////////////////////
     #region Game Management
+    void DisplayTime(float timeToDisplay)
+    {
+        timeToDisplay += 1;
+        float minutes = Mathf.FloorToInt(timeToDisplay / 60);
+        float seconds = Mathf.FloorToInt(timeToDisplay % 60);
+        timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        finalTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
     private void ProgressTextUpdate(int currentMultiply)
     {
-        progressStarted = true;
+        timerOn = true;
         currentPoints += points;
         scoreText.text = currentPoints.ToString();
         multiplicationNumberText.text =currentMultiply.ToString();
@@ -92,13 +101,22 @@ public class GameManager : MonoBehaviour
     {
         pauseLabel.SetActive(true);
         onLabel?.Invoke(false);
+        timerOn = false;
+    }
+    public void PauseLabelOff()
+    {
+        pauseLabel.SetActive(false);
+        onLabel?.Invoke(true);
+
+        if(time!=0)
+            timerOn = true;
     }
     private void GameOverLabelOn()
     {
         gameOverLabel.SetActive(true);
         onLabel?.Invoke(false);
 
-        progressStarted = false;
+        timerOn = false;
         gameOver = true;
     }
     private void FinalScore()
