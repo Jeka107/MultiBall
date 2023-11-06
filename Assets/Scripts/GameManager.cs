@@ -34,11 +34,12 @@ public class GameManager : MonoBehaviour
     [Header("Labels Management")]
     [SerializeField] private GameObject pauseLabel;
     [SerializeField] private GameObject gameOverLabel;
+
+    [SerializeField] private int pointsDecrease; //decrease points after x second.
+    [SerializeField] private int onSecondDo;    //on second x decrease points.
+    [SerializeField] private float waitForDecreaseTime;
     [SerializeField] private TextMeshProUGUI finalTimeText;
     [SerializeField] private TextMeshProUGUI finalScoreText;
-
-    private bool gameOver=false;
-    private bool labelOn = false;
     /////////////////////////////
 
     private void Awake()
@@ -61,31 +62,17 @@ public class GameManager : MonoBehaviour
             time += Time.deltaTime;
             DisplayTime(time);
         }
-        if (gameOver)
-        {
-            if (time >= 0)
-            {
-                time -= Time.deltaTime * 15;
-                DisplayTime(time);
-
-                FinalScore();
-            }
-            else
-            {
-                onNewScore?.Invoke((int)currentPoints);
-                gameOver = false;
-            }
-        }
     }
     /////////////////////////////
     #region Game Management
     void DisplayTime(float timeToDisplay)
     {
         timeToDisplay += 1;
+
         float minutes = Mathf.FloorToInt(timeToDisplay / 60);
         float seconds = Mathf.FloorToInt(timeToDisplay % 60);
+
         timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-        finalTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
     private void ProgressTextUpdate(int currentMultiply)
     {
@@ -115,18 +102,39 @@ public class GameManager : MonoBehaviour
     {
         gameOverLabel.SetActive(true);
         onLabel?.Invoke(false);
+        StartCoroutine(GameOverLabelTimeScoreDisplay());
+        onNewScore?.Invoke((int)currentPoints);
 
         timerOn = false;
-        gameOver = true;
     }
-    private void FinalScore()
+    IEnumerator GameOverLabelTimeScoreDisplay()
     {
-        currentPoints -= Time.deltaTime * timePointsMultiply;
+        while (time > 1)
+        {
+            time -= 1;
 
-        if (currentPoints <= 0)
-            currentPoints = 0;
-        
-        finalScoreText.text = ((int)currentPoints).ToString();
+            float minutes = Mathf.FloorToInt(time / 60);
+            float seconds = Mathf.FloorToInt(time % 60);
+
+            if (minutes==0)
+            {
+                if (seconds % onSecondDo == 0 && seconds!=0)
+                    currentPoints -= pointsDecrease;
+            }
+            else
+            {
+                if (seconds % onSecondDo == 0)
+                    currentPoints -= pointsDecrease;
+            }
+
+            if (currentPoints <= 0)
+                currentPoints = 0;
+
+            finalTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+            finalScoreText.text = (Mathf.FloorToInt(currentPoints)).ToString();
+
+            yield return new WaitForSeconds(waitForDecreaseTime);
+        }
     }
     #endregion
     /////////////////////////////
