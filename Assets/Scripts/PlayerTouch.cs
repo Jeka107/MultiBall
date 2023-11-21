@@ -1,11 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerTouch : MonoBehaviour
 {
     public delegate void OnBallPressed(Transform transform,GameObject gameObject);
     public static event OnBallPressed onBallPressed;
+
+    public delegate void OnShakingStatus(bool status);
+    public static event OnShakingStatus onShakingStatus;
 
     private Camera mainCamera;
     private bool touchStatus=true;
@@ -14,12 +15,12 @@ public class PlayerTouch : MonoBehaviour
     {
         mainCamera = Camera.main;
         InputManager.onPlayerPressed += ObjectTouched;
-        GameManager.onLabel += TouchStatus;
+        GameManager.onLabel += SetTouchStatus;
     }
     private void OnDestroy()
     {
         InputManager.onPlayerPressed -= ObjectTouched;
-        GameManager.onLabel -= TouchStatus;
+        GameManager.onLabel -= SetTouchStatus;
     }
 
     private void ObjectTouched(Vector2 touchPosition)
@@ -41,8 +42,9 @@ public class PlayerTouch : MonoBehaviour
             }
         }
     }
-    private void TouchStatus(bool status)
+    private void SetTouchStatus(bool status)
     {
         touchStatus = status;
+        onShakingStatus?.Invoke(touchStatus);
     }
 }

@@ -1,37 +1,58 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BallsManager : MonoBehaviour
 {
+    public delegate void OnMaxMultiplier (bool state);
+    public static event OnMaxMultiplier onMaxMultiplier;
+    public delegate void OnSecondChance();
+    public static event OnSecondChance onSecondChance;
+
+
     [SerializeField] private GameObject mainBall;
     [SerializeField] private GameObject ball;
     [SerializeField] private Transform ballsParent;
-     
+    [SerializeField] private List<Material> materials = new List<Material>();
+    [SerializeField] private int maxMultiplier;
 
     private List<GameObject> balls = new List<GameObject>();
     private List<int> rows=new List<int>{ 1,2,3 };
     private List<int> colms = new List<int> { 1, 2, 3 };
     private List<int> exceptionsNumbers = new List<int>();
+    private List<int> materialNums;
+
     private int mainNum;
     private Vector3 mainBallPosition;
     private GameObject currentBall;
     private Vector3 spawnPosition;
     private int currentMult = 2;
+    private int round=0;
+    private Vector3 lastMainBallPos;
 
     private void Awake()
     {
         MainBall.onDestination += DestroyBalls;
+        RewardedAdsButton.onSecondSchance += SecondChance;
     }
     private void OnDestroy()
     {
         MainBall.onDestination -= DestroyBalls;
+        RewardedAdsButton.onSecondSchance -= SecondChance;
     }
     private void Start()
     {
         mainNum = mainBall.GetComponent<MainBall>().GetMainNum();
 
         CreateBalls();
+    }
+    private void CreateMaterialNums()
+    {
+        materialNums = new List<int>();
+
+        for (int i=0;i<materials.Count;i++)
+        {
+            materialNums.Add(i);
+        }
     }
     private void DestroyBalls()
     {
@@ -40,12 +61,23 @@ public class BallsManager : MonoBehaviour
             Destroy(ball);
         }
         balls.Clear();
-        CreateBalls();
+
+        if (round != maxMultiplier)
+        {
+            CreateBalls();
+            round++;
+        }
+        else
+            onMaxMultiplier?.Invoke(true);
     }
     private void CreateBalls()
     {
-        mainBallPosition = mainBall.transform.position;
         float randBall;
+
+        lastMainBallPos = mainBall.transform.position;
+
+        CreateMaterialNums();
+        mainBallPosition = mainBall.transform.position;
 
         for (int i = 0; i <= 2; i++)
         {
@@ -88,7 +120,7 @@ public class BallsManager : MonoBehaviour
                 randy = Random.Range(6f,10f);
                 break;
             case 3:
-                randy = Random.Range(14f, 20f);
+                randy = Random.Range(14f, 18f);
                 break;
         }
         switch(colmsNumber)
@@ -115,18 +147,27 @@ public class BallsManager : MonoBehaviour
 
     private void PutInNumber(GameObject ball,bool correctNumber)
     {
-        int randNum;
+        int randNum=0;
+        int randMaterial = Random.Range(0, materialNums.Count);
+        Ball currentBall = ball.GetComponent<Ball>();
 
         if (correctNumber)
         {
-            ball.GetComponent<Ball>().SetNumber(mainNum * currentMult);
+            currentBall.SetNumber(mainNum * currentMult);
+            currentBall.SetTimerOn();
+            currentBall.SetMaterial(materials[materialNums[randMaterial]]);
+            materialNums.RemoveAt(randMaterial);
             exceptionsNumbers.Add(mainNum * currentMult);
             currentMult++;
         }
         else
         {
-            randNum = Random.Range((mainNum * (currentMult - 2))+1, mainNum * (currentMult + 4));
+            if(mainNum<4)
+                randNum = Random.Range((mainNum * (currentMult - 2))+1, mainNum * (currentMult + 3));
+            else
+                randNum = Random.Range((mainNum * (currentMult - 2))+1, mainNum * (currentMult + 1));
 
+            
             for (int i = 0; i < exceptionsNumbers.Count; i++)
             {
                 if (exceptionsNumbers[i] == randNum)
@@ -135,9 +176,16 @@ public class BallsManager : MonoBehaviour
                     return;
                 }
             }
-            ball.GetComponent<Ball>().SetNumber(randNum);
+            currentBall.SetNumber(randNum);
+            currentBall.SetMaterial(materials[materialNums[randMaterial]]);
+            materialNums.RemoveAt(randMaterial);
             exceptionsNumbers.Add(randNum);
         }
+    }
+    private void SecondChance()
+    {
+        mainBall.transform.position = new Vector3(lastMainBallPos.x, lastMainBallPos.y, lastMainBallPos.z);
+        onSecondChance?.Invoke();
     }
     
 }

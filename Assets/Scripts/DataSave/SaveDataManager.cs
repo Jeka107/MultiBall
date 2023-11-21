@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -35,54 +34,78 @@ public static class JsonHelper
 
 public class SaveDataManager : MonoBehaviour
 {
-    private static List<PlayerSavedData> newGame=new List<PlayerSavedData>(9);
+    public static List<PlayerSavedData> newGame=new List<PlayerSavedData>(9);
 
     private string saveFolderName = "Saved_Data_JSON";
-    private string saveFileName = "save_json1.sav";
+    private string saveGamePlayFileName = "save_json1.sav";
+    private string saveSettingsFileName = "settings_json1.sav";
 
     private static bool created = false;
     private string password = "Jeka";
     private bool encrypt = true;
-    private int currentMainNum;
+    private int currentMainNum=2;
     private int highScore=0;
 
+    private bool soundEffectStatus;
     private void Awake()
     {
+        soundEffectStatus = LoadDataSettingsData();
+
         if (!created)
         {
-            if (LoadData() == null)
+            if (LoadDataPlayerData() == null)
             {
                 CreateList();
                 SaveData();
             }
             else
             {
-                newGame = LoadData();
+                newGame = LoadDataPlayerData();
             }
+
+            SaveSettingsData();
 
             DontDestroyOnLoad(this.gameObject);
             created = true;
         }
         else
         {
-            newGame = LoadData();
-            Debug.Log(1);
+            newGame = LoadDataPlayerData();
         }
+
+        AudioController.onLastSoundEffect += GetSoundEffectStatus;
 
         MenuManager.onGetLastSelectedNum += GetLastSelectedNumber;
         MenuManager.onGetHighScore += GetHighScore;
         MenuManager.onSelectedNum += UpdateMainNumber;
-        MainBall.onGetmainNumber += GetMainNumber;
+        MenuManager.onLastSoundEffect += GetSoundEffectStatus;
+        MenuManager.onSetSoundEffect += SetSoundStatus;
+
+        GameManager.onGetHighScore += GetHighScore;
         GameManager.onNewScore += UpdateScoreList;
+        GameManager.onLastSoundEffectStatus += GetSoundEffectStatus;
+        GameManager.onSetSoundEffect += SetSoundStatus;
+        
+        MainBall.onGetmainNumber += GetMainNumber; 
     }
     private void OnDestroy()
     {
+        AudioController.onLastSoundEffect -= GetSoundEffectStatus;
+
         MenuManager.onGetLastSelectedNum -= GetLastSelectedNumber;
         MenuManager.onGetHighScore -= GetHighScore;
         MenuManager.onSelectedNum -= UpdateMainNumber;
-        MainBall.onGetmainNumber -= GetMainNumber;
+        MenuManager.onLastSoundEffect -= GetSoundEffectStatus;
+        MenuManager.onSetSoundEffect -= SetSoundStatus;
+
+        GameManager.onGetHighScore -= GetHighScore;
         GameManager.onNewScore -= UpdateScoreList;
+        GameManager.onLastSoundEffectStatus -= GetSoundEffectStatus;
+        GameManager.onSetSoundEffect -= SetSoundStatus;
+
+        MainBall.onGetmainNumber -= GetMainNumber;     
     }
+    #region PlayerDataUse$Update
     private void CreateList()
     {
         for(int i=0;i<9;i++)
@@ -90,7 +113,6 @@ public class SaveDataManager : MonoBehaviour
             newGame.Add(null);
         }
     }
-
     //Update//
     public void UpdateMainNumber(int mainNum)
     {
@@ -128,11 +150,13 @@ public class SaveDataManager : MonoBehaviour
 
         return highScore;
     }
+    #endregion
     //
+    #region PlayerDataSaveLoad
     public void SaveData()
     {
-        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveFileName;
-
+        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveGamePlayFileName;
+        
         if (!System.IO.File.Exists(filePath))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -147,15 +171,84 @@ public class SaveDataManager : MonoBehaviour
         {
             dataInJSON = EncryptDecrypt(dataInJSON);
         }
+        //onSaveToCloud?.Invoke(true);
+        sw.Write(dataInJSON);
+
+        sw.Close();
+        fs.Close();
+    }
+    
+    public List<PlayerSavedData> LoadDataPlayerData()
+    {
+        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveGamePlayFileName;
+
+        string dataToLoad = "";
+
+        if (System.IO.File.Exists(filePath))
+        {
+            FileStream fs = new FileStream(filePath, FileMode.Open);
+
+            StreamReader sr = new StreamReader(fs);
+
+            dataToLoad = sr.ReadToEnd();
+            //onSaveToCloud?.Invoke(false);
+
+            if (dataToLoad != null)
+            {
+                if (encrypt)
+                {
+                    dataToLoad = EncryptDecrypt(dataToLoad);
+                }
+
+                List<PlayerSavedData> loadedData = JsonHelper.FromJson<PlayerSavedData>(dataToLoad);
+
+                sr.Close();
+                fs.Close();
+
+                return loadedData;
+            }
+            else
+                return null;
+        }
+        return null;
+    }
+    #endregion
+
+    #region SettingsLoad
+    private bool GetSoundEffectStatus()
+    {
+        return soundEffectStatus;
+    }
+    private void SetSoundStatus(bool _soundEffectStatus)
+    {
+        soundEffectStatus = _soundEffectStatus;
+        SaveSettingsData();
+    }
+    private void SaveSettingsData()
+    {
+        PlayerSavedSettings dataToSave = new PlayerSavedSettings(soundEffectStatus);
+
+        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveSettingsFileName;
+        
+        if (!System.IO.File.Exists(filePath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        }
+
+        string dataInJSON = JsonUtility.ToJson(dataToSave, true);
+
+        FileStream fs = new FileStream(filePath, FileMode.Create);
+
+        StreamWriter sw = new StreamWriter(fs);
 
         sw.Write(dataInJSON);
 
         sw.Close();
         fs.Close();
     }
-    public List<PlayerSavedData> LoadData()
+    private bool LoadDataSettingsData()
     {
-        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveFileName;
+        string filePath = Application.persistentDataPath + "/" + saveFolderName + "/" + saveSettingsFileName;
 
         string dataToLoad = "";
 
@@ -167,22 +260,21 @@ public class SaveDataManager : MonoBehaviour
 
             dataToLoad = sr.ReadToEnd();
 
-            if (encrypt)
-            {
-                dataToLoad = EncryptDecrypt(dataToLoad);
-            }
+            PlayerSavedSettings loadedData =
+                JsonUtility.FromJson<PlayerSavedSettings>(dataToLoad);
 
-            List<PlayerSavedData> loadedData = JsonHelper.FromJson<PlayerSavedData>(dataToLoad);
+            soundEffectStatus = loadedData.soundEffectStatus;
 
             sr.Close();
             fs.Close();
 
-            return loadedData;
+            return soundEffectStatus;
         }
         else
-            return null;
-
+            return true;
     }
+    #endregion
+
     private string EncryptDecrypt(string data)
     {
         string newData = "";

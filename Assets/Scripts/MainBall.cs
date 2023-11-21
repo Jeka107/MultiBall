@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -8,9 +6,11 @@ public class MainBall : MonoBehaviour
     //Move ball to destination.
     public delegate void OnDestination();
     public static event OnDestination onDestination;
+    public delegate void OnAirSweepSound();
+    public static event OnAirSweepSound onAirSweepSound;
 
     //GameOver.
-    public delegate void OnGameOver();
+    public delegate void OnGameOver(bool state);
     public static event OnGameOver onGameOver;
 
     //Text canvas update.
@@ -25,11 +25,14 @@ public class MainBall : MonoBehaviour
     public delegate void OnMoveBackground(Vector3 distance);
     public static event OnMoveBackground onMoveBackground;
 
+    //Sound Effect
+    public delegate void OnMainBallMergedSE();
+    public static event OnMainBallMergedSE onMainBallMergedSE;
+
     [SerializeField] private float moveSpeed;
     [SerializeField] private TextMeshProUGUI textMainNumber;
     [SerializeField] private float forceCollision;
 
-    private Rigidbody rb;
     private bool clicked=false;
     private Transform transformClicked;
     private Vector3 distance;
@@ -40,8 +43,6 @@ public class MainBall : MonoBehaviour
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        //mainNum = int.Parse(textMainNumber.text);
         mainNum = onGetmainNumber.Invoke();
         textMainNumber.text = mainNum.ToString();
 
@@ -67,6 +68,8 @@ public class MainBall : MonoBehaviour
     }
     private void MoveMain(Transform _transformClicked,GameObject ball)
     {
+        onAirSweepSound?.Invoke();
+
         transformClicked = _transformClicked;
         distance = transformClicked.position - transform.position;
         onMoveBackground?.Invoke(distance);
@@ -80,16 +83,21 @@ public class MainBall : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ball" && collision.gameObject == ballClicked)
         {
-            Destroy(collision.gameObject);
+            
             if (mainNum * currentMult == numClicked)
             {
+                onMainBallMergedSE?.Invoke();//Sound Effect
+
+                Destroy(collision.gameObject);
                 currentMult++;
+
                 onPlayerProgress?.Invoke(currentMult);
-                onDestination?.Invoke();
+                onDestination?.Invoke(); 
             }
             else
             {
-                onGameOver?.Invoke();
+                collision.gameObject.SetActive(false);
+                onGameOver?.Invoke(false);
             }
         }
     }

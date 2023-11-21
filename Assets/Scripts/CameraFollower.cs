@@ -13,7 +13,7 @@ public class CameraFollower : MonoBehaviour
             if (playerTramsform.position.z > transform.position.z)
             {
                 transform.position = new Vector3(playerTramsform.position.x,
-                    playerTramsform.position.y+8,
+                    playerTramsform.position.y+9,
                     playerTramsform.position.z-20);
             }
         }

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
 
 [Serializable]
 public class PlayerSavedData
@@ -19,4 +17,19 @@ public class PlayerSavedData
         mainNumber = _mainNumber;
         highScore = _score;
     }
+}
+[Serializable]
+public class PlayerSavedSettings
+{
+    public bool soundEffectStatus;
+
+    public PlayerSavedSettings()
+    {
+        soundEffectStatus = false;
+    }
+    public PlayerSavedSettings(bool _soundEffectStatus)
+    {
+        soundEffectStatus = _soundEffectStatus;
+    }
+
 }

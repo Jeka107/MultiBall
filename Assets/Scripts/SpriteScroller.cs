@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SpriteScroller : MonoBehaviour
@@ -16,19 +14,24 @@ public class SpriteScroller : MonoBehaviour
 
         MainBall.onMoveBackground += MoveBackground;
         MainBall.onDestination += StopBackground;
-        MainBall.onGameOver += StopBackground;
     }
     private void OnDestroy()
     {
         MainBall.onMoveBackground -= MoveBackground;
         MainBall.onDestination -= StopBackground;
-        MainBall.onGameOver -= StopBackground;
     }
 
     private void Update()
     {
-        if(move)
+        if (move)
+        {
             material.mainTextureOffset += offset;
+        }
+        else
+        {
+            material.mainTextureOffset += offset;
+            offset = moveSpeed * Time.deltaTime;
+        }
     }
     private void MoveBackground(Vector3 distance)
     {
@@ -38,11 +41,13 @@ public class SpriteScroller : MonoBehaviour
         float y = distance.y;
         Vector2 newDistance= new Vector2(x, y);
 
+        moveSpeed.y = 1;
         offset = moveSpeed * Time.deltaTime* newDistance;
         move = true;
     }
     private void StopBackground()
     {
+        moveSpeed.y = 0.05f;
         move = false;
     }
 }
