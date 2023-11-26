@@ -9,6 +9,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
     [SerializeField] Button _showAdButton;
     [SerializeField] string _androidAdUnitId = "Rewarded_Android";
+    [SerializeField] private GameObject secondChanceText;
     //[SerializeField] string _iOSAdUnitId = "Rewarded_iOS";
     string _adUnitId = null; // This will remain null for unsupported platforms
 
@@ -23,6 +24,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
         // Disable the button until the ad is ready to show:
         _showAdButton.interactable = false;
+        secondChanceText.SetActive(false);
     }
 
     // Call this public method when you want to get an ad ready to show.
@@ -44,6 +46,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
             _showAdButton.onClick.AddListener(ShowAd);
             // Enable the button for users to click:
             _showAdButton.interactable = true;
+            secondChanceText.SetActive(true);
         }
     }
 
@@ -52,6 +55,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
     {
         // Disable the button:
         _showAdButton.interactable = false;
+        secondChanceText.SetActive(false);
         // Then show the ad:
         Advertisement.Show(_adUnitId, this);
     }
