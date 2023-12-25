@@ -171,7 +171,6 @@ public class SaveDataManager : MonoBehaviour
         {
             dataInJSON = EncryptDecrypt(dataInJSON);
         }
-        //onSaveToCloud?.Invoke(true);
         sw.Write(dataInJSON);
 
         sw.Close();
@@ -191,7 +190,6 @@ public class SaveDataManager : MonoBehaviour
             StreamReader sr = new StreamReader(fs);
 
             dataToLoad = sr.ReadToEnd();
-            //onSaveToCloud?.Invoke(false);
 
             if (dataToLoad != null)
             {

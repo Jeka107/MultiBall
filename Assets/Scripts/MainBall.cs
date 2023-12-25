@@ -29,6 +29,9 @@ public class MainBall : MonoBehaviour
     public delegate void OnMainBallMergedSE();
     public static event OnMainBallMergedSE onMainBallMergedSE;
 
+    public delegate void OnReachedDes();
+    public static event OnReachedDes onReachedDes;
+
     [SerializeField] private float moveSpeed;
     [SerializeField] private TextMeshProUGUI textMainNumber;
     [SerializeField] private float forceCollision;
@@ -59,7 +62,10 @@ public class MainBall : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, transformClicked.position, moveSpeed * Time.deltaTime);
 
             if (transformClicked.position == transform.position)
+            {
                 clicked = false;
+                onDestination?.Invoke();
+            }
         }
     }
     public int GetMainNum()
@@ -88,11 +94,12 @@ public class MainBall : MonoBehaviour
             {
                 onMainBallMergedSE?.Invoke();//Sound Effect
 
-                Destroy(collision.gameObject);
+                //Destroy(collision.gameObject);
+                collision.gameObject.SetActive(false);
                 currentMult++;
 
                 onPlayerProgress?.Invoke(currentMult);
-                onDestination?.Invoke(); 
+                //onDestination?.Invoke(); 
             }
             else
             {

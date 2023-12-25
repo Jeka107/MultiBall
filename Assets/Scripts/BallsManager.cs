@@ -15,7 +15,7 @@ public class BallsManager : MonoBehaviour
     [SerializeField] private List<Material> materials = new List<Material>();
     [SerializeField] private int maxMultiplier;
 
-    private List<GameObject> balls = new List<GameObject>();
+    [SerializeField] private List<GameObject> balls = new List<GameObject>();
     private List<int> rows=new List<int>{ 1,2,3 };
     private List<int> colms = new List<int> { 1, 2, 3 };
     private List<int> exceptionsNumbers = new List<int>();
@@ -23,7 +23,8 @@ public class BallsManager : MonoBehaviour
 
     private int mainNum;
     private Vector3 mainBallPosition;
-    private GameObject currentBall;
+    //private GameObject currentBall;
+    private int currentBall=0;
     private Vector3 spawnPosition;
     private int currentMult = 2;
     private int round=0;
@@ -33,6 +34,8 @@ public class BallsManager : MonoBehaviour
     {
         MainBall.onDestination += DestroyBalls;
         RewardedAdsButton.onSecondSchance += SecondChance;
+
+        CreateListOfBalls();
     }
     private void OnDestroy()
     {
@@ -44,6 +47,13 @@ public class BallsManager : MonoBehaviour
         mainNum = mainBall.GetComponent<MainBall>().GetMainNum();
 
         CreateBalls();
+    }
+    private void CreateListOfBalls()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            balls.Add(Instantiate(ball, Vector3.zero, Quaternion.identity, ballsParent));
+        }
     }
     private void CreateMaterialNums()
     {
@@ -58,9 +68,9 @@ public class BallsManager : MonoBehaviour
     {
         foreach (GameObject ball in balls)
         {
-            Destroy(ball);
+            currentBall = 0;
+            ball.SetActive(false);
         }
-        balls.Clear();
 
         if (round != maxMultiplier)
         {
@@ -102,6 +112,14 @@ public class BallsManager : MonoBehaviour
         }
 
         exceptionsNumbers.Clear();
+        SetActiveBalls();
+    }
+    private void SetActiveBalls()
+    {
+        foreach (GameObject ball in balls)
+        {
+            ball.SetActive(true);
+        }
     }
     private void PositionBalls(int rowNumber,int colmsNumber)
     {
@@ -141,8 +159,8 @@ public class BallsManager : MonoBehaviour
         spawnPosition.x = randx;
         spawnPosition.z += (int)randz;
 
-        currentBall =Instantiate(ball, spawnPosition, Quaternion.identity, ballsParent);
-        balls.Add(currentBall);
+        balls[currentBall].transform.position = spawnPosition;
+        currentBall++;
     }
 
     private void PutInNumber(GameObject ball,bool correctNumber)
