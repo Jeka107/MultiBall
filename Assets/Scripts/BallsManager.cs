@@ -33,6 +33,8 @@ public class BallsManager : MonoBehaviour
     private void Awake()
     {
         MainBall.onDestination += DestroyBalls;
+        MainBall.onCreateNewBalls += CreateBalls;
+
         RewardedAdsButton.onSecondSchance += SecondChance;
 
         CreateListOfBalls();
@@ -40,6 +42,8 @@ public class BallsManager : MonoBehaviour
     private void OnDestroy()
     {
         MainBall.onDestination -= DestroyBalls;
+        MainBall.onCreateNewBalls -= CreateBalls;
+
         RewardedAdsButton.onSecondSchance -= SecondChance;
     }
     private void Start()
@@ -68,26 +72,27 @@ public class BallsManager : MonoBehaviour
     {
         foreach (GameObject ball in balls)
         {
-            currentBall = 0;
             ball.SetActive(false);
         }
-
-        if (round != maxMultiplier)
-        {
-            CreateBalls();
-            round++;
-        }
-        else
-            onMaxMultiplier?.Invoke(true);
+        
     }
     private void CreateBalls()
     {
         float randBall;
 
-        lastMainBallPos = mainBall.transform.position;
+        if (round != maxMultiplier)
+        {
+            round++;
+        }
+        else
+        {
+            onMaxMultiplier?.Invoke(true);
+            return;
+        }
 
+        currentBall = 0;
         CreateMaterialNums();
-        mainBallPosition = mainBall.transform.position;
+        lastMainBallPos=mainBallPosition = mainBall.transform.position;
 
         for (int i = 0; i <= 2; i++)
         {
@@ -144,13 +149,16 @@ public class BallsManager : MonoBehaviour
         switch(colmsNumber)
         {
             case 1:
-                randx = Random.Range(Mathf.Round(mainBallPosition.x - 6f), Mathf.Round(mainBallPosition.x - 5f));
+                randx = Random.Range(Mathf.Round(mainBallPosition.x - 6f),
+                    Mathf.Round(mainBallPosition.x - 5f));
                 break;
             case 2:
-                randx = Random.Range(Mathf.Round(mainBallPosition.x - 2f), Mathf.Round(mainBallPosition.x + 2f));
+                randx = Random.Range(Mathf.Round(mainBallPosition.x - 2f),
+                    Mathf.Round(mainBallPosition.x + 2f));
                 break;
             case 3:
-                randx = Random.Range(Mathf.Round(mainBallPosition.x + 5f), Mathf.Round(mainBallPosition.x + 6f));
+                randx = Random.Range(Mathf.Round(mainBallPosition.x + 5f),
+                    Mathf.Round(mainBallPosition.x + 6f));
                 break;
         }
         randz = Random.Range(10f, 20f);
@@ -158,7 +166,6 @@ public class BallsManager : MonoBehaviour
         spawnPosition.y = randy + mainBallPosition.y;
         spawnPosition.x = randx;
         spawnPosition.z += (int)randz;
-
         balls[currentBall].transform.position = spawnPosition;
         currentBall++;
     }
@@ -196,13 +203,15 @@ public class BallsManager : MonoBehaviour
             }
             currentBall.SetNumber(randNum);
             currentBall.SetMaterial(materials[materialNums[randMaterial]]);
+            currentBall.SetTimerOff();
             materialNums.RemoveAt(randMaterial);
             exceptionsNumbers.Add(randNum);
         }
     }
     private void SecondChance()
     {
-        mainBall.transform.position = new Vector3(lastMainBallPos.x, lastMainBallPos.y, lastMainBallPos.z);
+        mainBall.transform.position = new Vector3(lastMainBallPos.x
+            , lastMainBallPos.y, lastMainBallPos.z);
         onSecondChance?.Invoke();
     }
     

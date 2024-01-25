@@ -9941,6 +9941,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e3f46577ec56a86409a3e3e04599eb72, type: 2}
   - {fileID: 2100000, guid: e4c059792e8efdf4398b8d4ef026f400, type: 2}
   maxMultiplier: 99
+  balls: []
 --- !u!1 &1618087233
 GameObject:
   m_ObjectHideFlags: 0

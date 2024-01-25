@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 
@@ -8,6 +9,8 @@ public class MainBall : MonoBehaviour
     public static event OnDestination onDestination;
     public delegate void OnAirSweepSound();
     public static event OnAirSweepSound onAirSweepSound;
+    public delegate void OnCreateNewBalls();
+    public static event OnCreateNewBalls onCreateNewBalls;
 
     //GameOver.
     public delegate void OnGameOver(bool state);
@@ -28,9 +31,6 @@ public class MainBall : MonoBehaviour
     //Sound Effect
     public delegate void OnMainBallMergedSE();
     public static event OnMainBallMergedSE onMainBallMergedSE;
-
-    public delegate void OnReachedDes();
-    public static event OnReachedDes onReachedDes;
 
     [SerializeField] private float moveSpeed;
     [SerializeField] private TextMeshProUGUI textMainNumber;
@@ -57,16 +57,21 @@ public class MainBall : MonoBehaviour
     }
     private void Update()
     {
-        if (transformClicked && clicked)
+        if (clicked)
         {
             transform.position = Vector3.MoveTowards(transform.position, transformClicked.position, moveSpeed * Time.deltaTime);
 
             if (transformClicked.position == transform.position)
             {
                 clicked = false;
-                onDestination?.Invoke();
             }
         }
+    }
+    IEnumerator WaitBeforeCreateNewBalls()
+    {
+        onDestination?.Invoke();
+        yield return new WaitForSeconds(0.05f);
+        onCreateNewBalls?.Invoke();
     }
     public int GetMainNum()
     {
@@ -89,17 +94,14 @@ public class MainBall : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ball" && collision.gameObject == ballClicked)
         {
-            
             if (mainNum * currentMult == numClicked)
             {
-                onMainBallMergedSE?.Invoke();//Sound Effect
-
-                //Destroy(collision.gameObject);
                 collision.gameObject.SetActive(false);
+                onMainBallMergedSE?.Invoke();//Sound Effect
                 currentMult++;
 
                 onPlayerProgress?.Invoke(currentMult);
-                //onDestination?.Invoke(); 
+                StartCoroutine(WaitBeforeCreateNewBalls());
             }
             else
             {

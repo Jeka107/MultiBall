@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -12,7 +10,7 @@ public class Ball : MonoBehaviour
     [SerializeField]  private MeshRenderer meshRenderer;
     private float time;
     private bool timerOn = false;
-    private bool shakingIsOk;
+    private bool shakingIsOk=true;
 
     private void Awake()
     {
@@ -29,6 +27,7 @@ public class Ball : MonoBehaviour
         if (timerOn && shakingIsOk)
         {
             time += Time.deltaTime;
+
             float seconds = Mathf.FloorToInt(time % 60);
 
             if (seconds == shakingAfterSecond)
@@ -50,7 +49,12 @@ public class Ball : MonoBehaviour
     }
     public void SetTimerOn()
     {
+        time = 0;
         timerOn = true;
+    }
+    public void SetTimerOff()
+    {
+        timerOn = false;
     }
     private void SetShakingStatus(bool status)
     {
