@@ -3,7 +3,7 @@ using TMPro;
 
 public class Ball : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI textNumber;
+    [SerializeField] private TextMeshPro textNumber;
     [SerializeField] private float shakingAfterSecond;
 
     private Animator animator;
@@ -34,7 +34,7 @@ public class Ball : MonoBehaviour
                 animator.SetBool("BallShaking", true);
         }
     }
-    public TextMeshProUGUI GetNumber()
+    public TextMeshPro GetNumber()
     {
         return textNumber;
     }

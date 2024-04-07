@@ -36,8 +36,6 @@ public class BallsManager : MonoBehaviour
         MainBall.onCreateNewBalls += CreateBalls;
 
         RewardedAdsButton.onSecondSchance += SecondChance;
-
-        CreateListOfBalls();
     }
     private void OnDestroy()
     {
@@ -52,13 +50,7 @@ public class BallsManager : MonoBehaviour
 
         CreateBalls();
     }
-    private void CreateListOfBalls()
-    {
-        for (int i = 0; i < 9; i++)
-        {
-            balls.Add(Instantiate(ball, Vector3.zero, Quaternion.identity, ballsParent));
-        }
-    }
+
     private void CreateMaterialNums()
     {
         materialNums = new List<int>();

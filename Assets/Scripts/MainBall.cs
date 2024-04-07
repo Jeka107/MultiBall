@@ -33,7 +33,7 @@ public class MainBall : MonoBehaviour
     public static event OnMainBallMergedSE onMainBallMergedSE;
 
     [SerializeField] private float moveSpeed;
-    [SerializeField] private TextMeshProUGUI textMainNumber;
+    [SerializeField] private TextMeshPro textMainNumber;
     [SerializeField] private float forceCollision;
 
     private bool clicked=false;

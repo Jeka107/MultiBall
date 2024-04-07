@@ -80,6 +80,7 @@ public class GameManager : MonoBehaviour
     [Header("Labels Management")]
     [SerializeField] private GameObject pauseLabel;
     [SerializeField] private GameObject gameStateLabel;
+    [SerializeField] private GameObject rewardBtn;
     /////////////////////////////
     [Space]
     [Header("Sound Management")]
@@ -280,10 +281,15 @@ public class GameManager : MonoBehaviour
         gameStateLabel.SetActive(true);
 
         if (state)
+        {
             gameStateText.text = "You Win";
+            rewardBtn.SetActive(false);
+        }
         else
+        {
             gameStateText.text = "Game Over";
-
+            rewardBtn.SetActive(true);
+        }
         onLabel?.Invoke(false);
         currentBestScore = onGetHighScore.Invoke();
         onNewScore?.Invoke((int)currentPoints);
